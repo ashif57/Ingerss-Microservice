@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-3tier
+  annotations:
+    # Use regex for path matching
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Rewrite the path so the backend receives clean paths
+    # E.g. /api/fastapi/data -> /data
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # Route /api/fastapi/* to FastAPI service
+      - path: /api/fastapi(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: fastapi-service
+            port:
+              number: 8000
+      
+      # Route /api/node/* to Node.js service
+      - path: /api/node(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: nodebackend-service
+            port:
+              number: 3001
+      
+      # Route everything else (/) to React frontend
+      - path: /()(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: react-service
+            port:
+              number: 5173

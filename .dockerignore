@@ -1,0 +1,27 @@
+# General
+.git
+.gitignore
+README.md
+docker-compose.yml
+
+# Dependencies
+**/node_modules
+**/venv
+**/.venv
+**/__pycache__
+**/*.pyc
+
+# Environment files - usually don't want these successfully built into generic images, 
+# though sometimes needed for dev. For production builds, we usually inject env vars.
+# Keeping them out of build context is safer.
+**/.env
+**/.env.*
+
+# Build artifacts
+**/dist
+**/build
+**/coverage
+
+# IDE
+**/.vscode
+**/.idea
