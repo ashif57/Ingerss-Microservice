@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nodebackend
-        image: nodebackend:latest
+        image: ashif579/nodebackend:latest
         imagePullPolicy: IfNotPresent  # For local testing with Minikube/Docker Desktop
         ports:
         - containerPort: 3001

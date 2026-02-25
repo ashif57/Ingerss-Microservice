@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: fastapi:latest
+        image: ashif579/fastapi:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000

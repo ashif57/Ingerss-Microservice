@@ -41,6 +41,12 @@ docker build \
   -t react:latest ./react
 ```
 
+we can alos use
+docker build \
+ --build-arg VITE_NODE_API_URL="/api/node" \
+ --build-arg VITE_FASTAPI_URL="/api/fastapi" \
+ -t react:latest ./react
+
 ### 2. Apply Kubernetes Manifests
 
 Apply all files in the `k8s` folder:
@@ -54,3 +60,5 @@ kubectl apply -f k8s/
 1.  Check pods: `kubectl get pods`
 2.  Check Ingress: `kubectl get ingress`
 3.  Open browser: **http://localhost**
+4.  install teh driver if not already installed
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
