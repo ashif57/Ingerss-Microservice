@@ -35,6 +35,7 @@ services:
       - "3001:3001"
     volumes:
       - ./nodebackend:/app
+      - /app/node_modules
 
   redis:
     image: redis:alpine

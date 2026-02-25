@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.9-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -13,11 +13,11 @@ FROM gcr.io/distroless/python3-debian12
 WORKDIR /app
 
 # Copy dependencies from builder
-COPY --from=builder /app/site-packages /usr/lib/python3.9/site-packages
+COPY --from=builder /app/site-packages /usr/lib/python3.11/site-packages
 COPY . .
 
 # Set python path to include installed dependencies
-ENV PYTHONPATH=/usr/lib/python3.9/site-packages
+ENV PYTHONPATH=/usr/lib/python3.11/site-packages
 
 EXPOSE 8000
 
