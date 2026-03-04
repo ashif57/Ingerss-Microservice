@@ -126,3 +126,22 @@ Once the UI is running, use these buttons:
 4.  **Redis Test (API Only)**:
     - `POST /redis` to save data.
     - `GET /redis` to read data.
+
+---
+
+## ⚡ New Features (Caching Branch)
+
+The `caching` branch introduces significant performance and security improvements to the FastAPI service by leveraging Redis.
+
+### 1. Redis Caching Layer (`/call-node`)
+
+- The FastAPI service now uses Redis to cache responses from the Node.js backend.
+- **How it works:** When a request hits `/call-node`, FastAPI checks Redis for a cached response (`node_data_cache`). If it exists, it returns the cached data instantly. If not, it fetches from Node.js, caches it in Redis with a 10-second expiration, and then returns the data.
+- **Benefits:** Drastically reduces latency and minimizes the load on the downstream Node.js service.
+
+### 2. Global Rate Limiting
+
+- A global rate-limiting middleware has been added to the FastAPI service to prevent API abuse and DDoS attacks.
+- **How it works:** It uses an atomic Redis pipeline to track the number of requests per client IP address.
+- **Configuration:** Currently limits traffic to **5 requests per 60 seconds** per IP.
+- **Resilient:** If Redis goes down, the middleware gracefully fails open (allowing traffic to continue) so the service remains highly available.
