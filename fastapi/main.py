@@ -12,6 +12,17 @@ import redis
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 r = redis.Redis(host=REDIS_HOST, port=6379, db=0, decode_responses=True)
 
+try:
+    # Configure Redis for optimal in-memory caching
+    # 1. Set a maximum memory limit
+    r.config_set("maxmemory", "50mb")
+    # 2. Use Least Recently Used (LRU) algorithm to evict oldest keys when full
+    # Alternatives: 'allkeys-lfu' for Least Frequently Used
+    r.config_set("maxmemory-policy", "allkeys-lru")
+    print("Redis configured with 50mb maxmemory and allkeys-lru eviction policy.")
+except Exception as e:
+    print(f"Warning: Could not configure Redis memory settings: {e}")
+
 app = FastAPI()
 
 # Rate limiting configuration
@@ -100,8 +111,8 @@ def call_node():
         response.raise_for_status()
         data = response.json()
 
-        # Save to cache with an expiration (e.g., 10 seconds)
-        r.setex("node_data_cache", 10, json.dumps(data))
+        # Save to cache without a time limit, letting Redis LRU algorithm manage evictions optimally
+        r.set("node_data_cache", json.dumps(data))
 
         return {
             "message": "FastAPI successfully called Node.js",

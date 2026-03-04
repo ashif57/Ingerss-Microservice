@@ -145,3 +145,15 @@ The `caching` branch introduces significant performance and security improvement
 - **How it works:** It uses an atomic Redis pipeline to track the number of requests per client IP address.
 - **Configuration:** Currently limits traffic to **5 requests per 60 seconds** per IP.
 - **Resilient:** If Redis goes down, the middleware gracefully fails open (allowing traffic to continue) so the service remains highly available.
+
+---
+
+## 🧠 Algorithmic Caching Branch (`memory-caching`)
+
+The algorithmic caching branch refactors our Redis implementation to use a **Least Recently Used (LRU)** eviction strategy instead of hard-coded time expirations.
+
+### Key Changes
+
+- **Memory Bounded**: Configured Redis `maxmemory` to `50mb`, ensuring strict, predictable RAM consumption.
+- **LRU Policy**: Set Redis `maxmemory-policy` to `allkeys-lru`. Redis will now automatically evict the oldest, least accessed data only when the 50mb cap is reached.
+- **Persistent Hot Data**: Removed `setex` (time-to-live expirations) from the `/call-node` caching layer. "Hot" (frequently accessed) payloads now reliably stay in memory indefinitely without artificially expiring, maximizing cache hit rates.
