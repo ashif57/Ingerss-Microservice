@@ -26,6 +26,8 @@ spec:
           value: "http://localhost"
         - name: REDIS_HOST
           value: "redis-service"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq-service"
 ---
 apiVersion: v1
 kind: Service

@@ -21,6 +21,8 @@ spec:
         env:
         - name: PORT
           value: "3001"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq-service"
 ---
 apiVersion: v1
 kind: Service

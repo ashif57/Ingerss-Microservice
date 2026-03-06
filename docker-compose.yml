@@ -38,6 +38,10 @@ services:
     volumes:
       - ./nodebackend:/app
       - /app/node_modules
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
 
   redis:
     image: redis:alpine
