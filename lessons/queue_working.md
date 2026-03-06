@@ -119,3 +119,36 @@ We also updated the `docker-compose.yml` file to reflect these same relationship
    [Node.js Consumer] Successfully processed message: {"key": "test_job", "value": "hello from queue!"}
    ```
    This proves that the services are successfully talking to each other completely asynchronously using RabbitMQ!
+
+---
+
+## 🏎️ Push vs Pull (Event-Driven vs Timeout-based Fetch)
+
+In message queuing, there are two primary ways a consumer can get messages from a queue:
+
+### 1. Event-Driven (Push-Based) -> _What our Node.js Worker uses_
+
+- **How it works**: The consumer (`Node.js`) establishes a persistent TCP connection to the broker (`RabbitMQ`). When a message arrives in the queue, RabbitMQ instantly **pushes** the message to the consumer.
+- **Code we used**: `channel.consume(QUEUE_NAME, callback)` inside `nodebackend/index.js`.
+- **Pros**: It is real-time, highly efficient, and doesn't waste CPU cycles because it simply waits for an event to trigger.
+
+### 2. Polling / Timeout Fetch (Pull-Based) -> _What our FastAPI `/consume` API uses_
+
+- **How it works**: The consumer has to actively ask the broker: "Do you have a message for me?" If there's nothing, it gets an empty response.
+- **Code we used**: `channel.basic_get(queue="task_queue")` inside the FastAPI `GET /consume` endpoint (used for manual testing).
+- **Pros/Cons**: It is useful for manual checks or batch processing, but setting up a constant loop to pull messages wastes resources (CPU/Network) when the queue is empty.
+
+---
+
+## ☁️ How is this simulated in the Cloud?
+
+When deploying similar architectures in AWS, Google Cloud, or Azure, you have managed services that mimic this behavior without you managing broker containers:
+
+1. **Event-Driven Push in the Cloud:**
+   - **AWS SQS + AWS Lambda**: AWS automatically monitors your SQS queue behind the scenes. The millisecond a message drops in the queue, AWS _pushes_ the event by spinning up a Lambda function to process it.
+   - **Google Cloud Pub/Sub + Cloud Run / Cloud Functions**: Pub/Sub instantly pushes the event via an HTTP POST request to your Cloud Run container.
+   - **AWS SNS / EventBridge**: True push notifications that trigger webhooks instantly.
+
+2. **Fetch-Based Polling in the Cloud:**
+   - **AWS SQS Standard Polling**: A traditional worker server (like an EC2 instance or ECS container) runs a continuous loop using a command like `sqs.receiveMessage()`.
+   - _Note on optimization:_ To prevent wasting CPU when the queue is empty, cloud services heavily rely on **Long Polling** (e.g., the worker keeps the connection open for 20 seconds waiting for a message before timing out and trying again).
