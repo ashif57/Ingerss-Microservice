@@ -7,6 +7,7 @@ import uvicorn
 import json
 from pydantic import BaseModel
 import redis
+import pika
 
 # Connect to Redis
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -145,6 +146,74 @@ def write_kv(item: Item):
         r.set(item.key, item.value)
         return {"message": "Saved to Redis", "key": item.key, "value": item.value}
     except Exception as e:
+        return {"error": str(e)}
+
+# ---------------------------------------------------------
+# RabbitMQ queuing endpoints
+# ---------------------------------------------------------
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+RABBITMQ_QUEUE = "task_queue"
+
+def get_rabbitmq_connection():
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+        return connection
+    except Exception as e:
+        print(f"Error connecting to RabbitMQ: {e}")
+        return None
+
+@app.post("/publish")
+def publish_message(item: Item):
+    connection = get_rabbitmq_connection()
+    if not connection:
+        return {"error": "Could not connect to RabbitMQ"}
+    
+    try:
+        channel = connection.channel()
+        # Declare queue as durable
+        channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
+        
+        message = json.dumps({"key": item.key, "value": item.value})
+        
+        channel.basic_publish(
+            exchange='',
+            routing_key=RABBITMQ_QUEUE,
+            body=message,
+            properties=pika.BasicProperties(
+                delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
+            )
+        )
+        connection.close()
+        return {"message": "Message published to RabbitMQ", "data": message}
+    except Exception as e:
+        if connection and not connection.is_closed:
+            connection.close()
+        return {"error": str(e)}
+
+@app.get("/consume")
+def consume_message():
+    connection = get_rabbitmq_connection()
+    if not connection:
+        return {"error": "Could not connect to RabbitMQ"}
+        
+    try:
+        channel = connection.channel()
+        channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
+        
+        # Get exactly one message from the queue
+        method_frame, header_frame, body = channel.basic_get(queue=RABBITMQ_QUEUE, auto_ack=True)
+        
+        connection.close()
+        
+        if method_frame:
+            message = json.loads(body.decode('utf-8'))
+            return {"message": "Successfully consumed message", "data": message}
+        else:
+            return {"message": "No messages in queue"}
+            
+    except Exception as e:
+        if connection and not connection.is_closed:
+            connection.close()
         return {"error": str(e)}
 
 if __name__ == "__main__":

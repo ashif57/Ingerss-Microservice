@@ -3,3 +3,4 @@ uvicorn
 requests
 redis
 async_timeout
+pika

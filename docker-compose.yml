@@ -25,9 +25,11 @@ services:
     environment:
       - NODE_SERVICE_URL=http://nodebackend:3001
       - REDIS_HOST=redis
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       - nodebackend
       - redis
+      - rabbitmq
 
   nodebackend:
     build: ./nodebackend
@@ -41,3 +43,9 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
