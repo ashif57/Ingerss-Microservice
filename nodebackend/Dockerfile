@@ -15,9 +15,10 @@ FROM gcr.io/distroless/nodejs18-debian12
 WORKDIR /app
 
 COPY --from=builder /app/index.js ./index.js
+COPY --from=builder /app/instrumentation.js ./instrumentation.js
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3001
 
-CMD ["index.js"]
+CMD ["--require", "./instrumentation.js", "index.js"]

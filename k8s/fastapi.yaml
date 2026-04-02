@@ -26,6 +26,10 @@ spec:
           value: "http://localhost"
         - name: REDIS_HOST
           value: "redis-service"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4318"
+        - name: OTEL_SERVICE_NAME
+          value: "fastapi-service"
 ---
 apiVersion: v1
 kind: Service

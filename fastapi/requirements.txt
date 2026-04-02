@@ -3,3 +3,8 @@ uvicorn
 requests
 redis
 async_timeout
+opentelemetry-distro
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-logging
